@@ -23,11 +23,6 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
-/**
- * Alex Tang
- * 2018年6月12日
- * desc:
- */
 public class FtpUtils {
     //ftp服务器地址
     public String hostName = "182.138.25.52";
