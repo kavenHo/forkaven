@@ -1,0 +1,31 @@
+用eclipse maven构建的多模块工程，代码调通没有报错，各个工程maven install也没有问题，eclipse自带的server中创建tomcat server后，将maven多模块工程的主工程发布到tomcat下，启动时总是报错找不到其他模块工程中的类。问过度娘后，整理解决方法如下：
+
+
+
+方法1
+
+除主工程（即要发布到tomcat下的工程，包含了web.xml等一系列配置的web工程）外的其他模块工程都工程右键->Run As->Maven install，将工程打成jar包install到本地仓库，然后关闭这些工程（close project），在主工程的pom.xml中添加子模块工程的依赖。之后，tomcat重新clean并启动项目，问题解决。
+
+此方法中，主工程能够找到依赖的其他模块工程项目是因为pom.xml中添加了其他工程的依赖，而其他工程已经install到本地仓库并且关闭了。项目启动时，maven仓库下之前install的jar包会自动打到tomcat的主工程的lib目录下。
+
+
+
+方法2
+
+方法1中，虽然能找到类了，但在开发中，如果需要更改其他模块工程中的代码，则更改后还有重新maven install，关闭工程，发布到tomcat，重新启动，才能使更改生效。故而，更好的解决方案是，配置主工程的deployment assembly属性，使得其从workspace中打包代码而不从maven库中。首先，打开之前关闭的所有其他模块工程，然后依然要在主工程的pom.xml中配置对其他模块工程的依赖。接着，主工程右键->build path->deployment assembly，将依赖的其他模块工程添加进去，配置例如：
+
+
+
+然后，tomcat重新clean，会发现原来的主工程下会有刚才加入的其他模块工程依赖，
+
+
+
+重新发布启动工程，主工程能够找到其他依赖工程的类，且其他模块工程修改后，不需要再maven install，可以直接生效。也可以用debug模式，问题解决。这种方法中，其实依赖的其他模块工程还是会被打成jar包放到tomcat下，不过不需要我们手动install，配置完成后，tomcat clean会自动打包。
+
+
+
+另，方法2中，我曾遇到过配置了deployment assembly的其他模块工程依赖后，依然class not found的情况，这时候需要检查其他模块工程（非主工程）的deployment assembly配置，如下：
+
+
+
+deploy path要更改为/，这样这个模块工程被打成jar包后，其中的class文件才会在jar包的根目录下，主工程才能找到。
